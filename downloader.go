@@ -22,7 +22,7 @@ func downloadClip(ctx context.Context, url, start, end, quality string) error {
 		format = fmt.Sprintf("bestvideo[height<=%s]+bestaudio/best[height<=%s]/best", quality, quality)
 	}
 
-	// 3. Section Syntax
+	// 3. Section Syntax (yt-dlp format: *start-end)
 	section := fmt.Sprintf("*%s-%s", strings.TrimSpace(start), strings.TrimSpace(end))
 
 	// 4. Arguments with "--" to prevent flag injection
@@ -32,19 +32,20 @@ func downloadClip(ctx context.Context, url, start, end, quality string) error {
 		"--force-keyframes-at-cuts",
 		"--merge-output-format", "mp4",
 		"-o", "clip_%(title)s.%(ext)s",
-		"--", // Everything after this is treated as a URL, not a flag
+		"--", // Critical security: ensures URL is not parsed as a flag
 		url,
 	}
 
 	cmd := exec.CommandContext(ctx, "yt-dlp", args...)
 	
+	// Direct output so user sees yt-dlp's native progress bar
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
 }
 
-// checkDeps ensures the user has the required tools installed
+// checkDeps ensures the user has required CLI tools installed
 func checkDeps() error {
 	deps := []string{"yt-dlp", "ffmpeg"}
 	for _, bin := range deps {

@@ -54,6 +54,7 @@ type model struct {
 
 func initialModel() model {
 	style := lipgloss.NewStyle().Foreground(cyan)
+	
 	u := textinput.New()
 	u.Placeholder = "Paste YouTube URL"
 	u.TextStyle = style
@@ -119,6 +120,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	if m.width == 0 { return "Initializing..." }
+	
 	var content strings.Builder
 	content.WriteString(lipgloss.NewStyle().Foreground(cyan).Render(asciiArt))
 	content.WriteString("\n\n")
@@ -146,6 +148,7 @@ func (m model) View() string {
 }
 
 func main() {
+	// Pre-flight check
 	if err := checkDeps(); err != nil {
 		fmt.Printf("❌ %v\n", err)
 		os.Exit(1)
@@ -160,18 +163,23 @@ func main() {
 
 	m := finalModel.(model)
 	if m.state == downloading {
-		// Set a 10-minute timeout context for the download
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+		// Clear the screen of any TUI remnants for a clean download log
+		fmt.Print("\033[H\033[2J")
+
+		// Timeout context to prevent zombie processes
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 		defer cancel()
 
-		fmt.Printf("\n🎬 %s INITIALIZING CLIP\n", lipgloss.NewStyle().Foreground(pink).Render("CLIPR:"))
+		fmt.Printf("🎬 %s INITIALIZING CLIP %s\n", 
+			lipgloss.NewStyle().Foreground(pink).Render("CLIPR:"), 
+			strings.Repeat("─", 20))
 		fmt.Printf("   Quality: %s | Range: %s - %s\n\n", m.quality, m.startInput.Value(), m.endInput.Value())
 
 		err := downloadClip(ctx, m.urlInput.Value(), m.startInput.Value(), m.endInput.Value(), m.quality)
 		if err != nil {
 			fmt.Printf("\n❌ Download failed: %v\n", err)
 		} else {
-			fmt.Println("\n✅ Success! Check current folder for your clip.")
+			fmt.Println("\n✅ Success! Clip saved to the current directory.")
 		}
 	}
 }
