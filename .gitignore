@@ -1,0 +1,33 @@
+# Binary outputs
+clipr
+clipr.exe
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Compiled object files
+*.a
+*.o
+
+# YouTube download artifacts (clips)
+clip_*.mp4
+clip_*.mkv
+clip_*.webm
+
+# Dependency folders (if using vendoring)
+vendor/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
